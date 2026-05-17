@@ -2,6 +2,7 @@
 // Re-run `stacksdapp generate` to update.
 
 import { request } from '@stacks/connect';
+import { createApiKeyMiddleware, createFetchFn } from '@stacks/network';
 import { fetchCallReadOnlyFunction, cvToValue, ClarityValue } from '@stacks/transactions';
 import { scaffoldConfig } from '../scaffold.config';
 import { callDevnetContract, getDevnetSenderAddress } from '../lib/devnet';
@@ -19,11 +20,14 @@ function getContractId(name: string): { address: string; contractName: string } 
   return { address: contractId.slice(0, dot), contractName: contractId.slice(dot + 1) };
 }
 
-function getStacksApiHeaders(): Record<string, string> | undefined {
-  if (!scaffoldConfig.hiroApiKey) return undefined;
-  return { 'x-api-key': scaffoldConfig.hiroApiKey };
+function getReadOnlyClient() {
+  if (!scaffoldConfig.hiroApiKey) return {};
+  return {
+    client: {
+      fetch: createFetchFn(createApiKeyMiddleware({ apiKey: scaffoldConfig.hiroApiKey })),
+    },
+  };
 }
-
 
 // ── tokenize ──────────────────────
 
@@ -127,9 +131,7 @@ export async function tokenize_getBalance(
     functionArgs,
     network: scaffoldConfig.isDevnet ? 'devnet' : scaffoldConfig.targetNetwork,
     senderAddress: senderAddress ?? getDevnetSenderAddress() ?? address,
-    fetchOptions: {
-      headers: getStacksApiHeaders(),
-    },
+    ...getReadOnlyClient(),
   });
   return cvToValue(result);
 }
@@ -150,9 +152,7 @@ export async function tokenize_getDecimals(
     functionArgs,
     network: scaffoldConfig.isDevnet ? 'devnet' : scaffoldConfig.targetNetwork,
     senderAddress: senderAddress ?? getDevnetSenderAddress() ?? address,
-    fetchOptions: {
-      headers: getStacksApiHeaders(),
-    },
+    ...getReadOnlyClient(),
   });
   return cvToValue(result);
 }
@@ -173,9 +173,7 @@ export async function tokenize_getName(
     functionArgs,
     network: scaffoldConfig.isDevnet ? 'devnet' : scaffoldConfig.targetNetwork,
     senderAddress: senderAddress ?? getDevnetSenderAddress() ?? address,
-    fetchOptions: {
-      headers: getStacksApiHeaders(),
-    },
+    ...getReadOnlyClient(),
   });
   return cvToValue(result);
 }
@@ -196,9 +194,7 @@ export async function tokenize_getSymbol(
     functionArgs,
     network: scaffoldConfig.isDevnet ? 'devnet' : scaffoldConfig.targetNetwork,
     senderAddress: senderAddress ?? getDevnetSenderAddress() ?? address,
-    fetchOptions: {
-      headers: getStacksApiHeaders(),
-    },
+    ...getReadOnlyClient(),
   });
   return cvToValue(result);
 }
@@ -219,9 +215,7 @@ export async function tokenize_getTokenUri(
     functionArgs,
     network: scaffoldConfig.isDevnet ? 'devnet' : scaffoldConfig.targetNetwork,
     senderAddress: senderAddress ?? getDevnetSenderAddress() ?? address,
-    fetchOptions: {
-      headers: getStacksApiHeaders(),
-    },
+    ...getReadOnlyClient(),
   });
   return cvToValue(result);
 }
@@ -242,9 +236,7 @@ export async function tokenize_getTotalSupply(
     functionArgs,
     network: scaffoldConfig.isDevnet ? 'devnet' : scaffoldConfig.targetNetwork,
     senderAddress: senderAddress ?? getDevnetSenderAddress() ?? address,
-    fetchOptions: {
-      headers: getStacksApiHeaders(),
-    },
+    ...getReadOnlyClient(),
   });
   return cvToValue(result);
 }
