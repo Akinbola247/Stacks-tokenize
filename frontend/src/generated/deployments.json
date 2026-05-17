@@ -1,0 +1,11 @@
+{
+  "network": "mainnet",
+  "deployed_at": "2026-05-17T08:46:38.522450+00:00",
+  "contracts": {
+    "tokenize": {
+      "contract_id": "SP1G1J8TVYKX3FXNJ3BJ7MYNMQTKXWCGKRFR0JDD6.tokenize",
+      "tx_id": "0x734a66691294fff6e054bfc6a163ab16d445e34442d417abcc13b849e521453e",
+      "block_height": 0
+    }
+  }
+}
