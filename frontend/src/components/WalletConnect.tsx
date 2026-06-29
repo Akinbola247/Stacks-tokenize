@@ -35,8 +35,9 @@ function getResponseStxAddress(addresses: Array<{ address: string; symbol?: stri
 }
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const [, setAddress] = useAtom(addressAtom);
+  const [address, setAddress] = useAtom(addressAtom);
   const [, setMounted] = useAtom(isMountedAtom);
+  const [connecting, setConnecting] = useState(false);
 
   useEffect(() => {
     const syncWalletState = () => {
@@ -44,7 +45,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         setAddress(null);
         return;
       }
-
       setAddress(getStoredStxAddress());
     };
 
@@ -52,9 +52,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     syncWalletState();
 
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        syncWalletState();
-      }
+      if (document.visibilityState === 'visible') syncWalletState();
     };
 
     window.addEventListener('focus', syncWalletState);
@@ -68,7 +66,32 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     };
   }, [setAddress, setMounted]);
 
-  return <>{children}</>;
+  const handleConnect = async () => {
+    setConnecting(true);
+    try {
+      const response = await connect();
+      const addr = getResponseStxAddress(response.addresses);
+      setAddress(addr);
+    } catch (e) {
+      console.error('[tokenized] connection failed:', e);
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  const handleDisconnect = () => {
+    disconnect();
+    setAddress(null);
+  };
+
+  const value: WalletContextValue = {
+    address,
+    connected: Boolean(address),
+    connect: handleConnect,
+    disconnect: handleDisconnect,
+  };
+
+  return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
 
 
