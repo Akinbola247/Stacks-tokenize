@@ -1,10 +1,10 @@
 {
   "network": "mainnet",
-  "deployed_at": "2026-05-17T08:46:38.522450+00:00",
+  "deployed_at": "2026-06-07T17:38:30.867073+00:00",
   "contracts": {
-    "tokenize": {
-      "contract_id": "SP1G1J8TVYKX3FXNJ3BJ7MYNMQTKXWCGKRFR0JDD6.tokenize",
-      "tx_id": "0x734a66691294fff6e054bfc6a163ab16d445e34442d417abcc13b849e521453e",
+    "tokenize-v7": {
+      "contract_id": "SP1G1J8TVYKX3FXNJ3BJ7MYNMQTKXWCGKRFR0JDD6.tokenize-v7",
+      "tx_id": "0xc97c554ad9f15f902e45c487add0748c89ab9e0911766a020710528f6fdbd701",
       "block_height": 0
     }
   }

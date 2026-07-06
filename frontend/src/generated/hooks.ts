@@ -9,10 +9,19 @@ import { scaffoldConfig } from '../scaffold.config';
 
 type TxLifecycleStatus = 'pending' | 'success' | 'abort_by_response' | 'error';
 
+const TX_POLL_INITIAL_DELAY_MS = 1500;
+const TX_POLL_INTERVAL_MS = 2500;
+const TX_POLL_MAX_TRANSIENT_ERRORS = 20;
+
+/** Hiro may return 404 until the tx is indexed — not a failure. */
+function isTransientTxPollHttpStatus(status: number): boolean {
+  return status === 404 || status === 408 || status === 429 || status === 502 || status === 503 || status === 504;
+}
 
 
 
-export function useTokenize_Mint() {
+
+export function useTokenizeV7_Mint() {
   const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -31,7 +40,7 @@ export function useTokenize_Mint() {
     setTxStatusError(null);
     try {
       // Use the generated contract function from the index
-      const fn = (contracts as any).tokenize_mint;
+      const fn = (contracts as any).tokenizeV7_mint;
       
       const result = isReadOnly 
         ? await fn(functionArgs) 
@@ -59,10 +68,17 @@ export function useTokenize_Mint() {
 
     let mounted = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let transientErrors = 0;
     const headers: Record<string, string> = {};
     if (scaffoldConfig.hiroApiKey) {
       headers['x-api-key'] = scaffoldConfig.hiroApiKey;
     }
+
+    const scheduleRetry = () => {
+      timer = setTimeout(() => {
+        void poll();
+      }, TX_POLL_INTERVAL_MS);
+    };
 
     const poll = async () => {
       try {
@@ -74,8 +90,24 @@ export function useTokenize_Mint() {
           },
         );
         if (!response.ok) {
+          if (isTransientTxPollHttpStatus(response.status)) {
+            transientErrors += 1;
+            if (!mounted) return;
+            if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+              setTxStatus('error');
+              setTxStatusError(
+                `Transaction status unavailable (HTTP ${response.status}) after ${transientErrors} attempts.`,
+              );
+              return;
+            }
+            setTxStatus('pending');
+            setTxStatusError(null);
+            scheduleRetry();
+            return;
+          }
           throw new Error(`tx status request failed with ${response.status}`);
         }
+        transientErrors = 0;
         const payload = await response.json();
         const status = String(payload?.tx_status ?? '').toLowerCase();
         if (!mounted) return;
@@ -92,9 +124,8 @@ export function useTokenize_Mint() {
         }
         if (status.includes('pending')) {
           setTxStatus('pending');
-          timer = setTimeout(() => {
-            void poll();
-          }, 2500);
+          setTxStatusError(null);
+          scheduleRetry();
           return;
         }
 
@@ -102,14 +133,23 @@ export function useTokenize_Mint() {
         setTxStatusError(payload?.tx_status ? `Unexpected tx status: ${payload.tx_status}` : 'Unknown tx status.');
       } catch (err) {
         if (!mounted) return;
-        setTxStatusError(err instanceof Error ? err.message : 'Failed to poll transaction status.');
-        timer = setTimeout(() => {
-          void poll();
-        }, 4000);
+        transientErrors += 1;
+        if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+          setTxStatus('error');
+          setTxStatusError(
+            err instanceof Error ? err.message : 'Failed to poll transaction status.',
+          );
+          return;
+        }
+        setTxStatus('pending');
+        setTxStatusError(null);
+        scheduleRetry();
       }
     };
 
-    void poll();
+    timer = setTimeout(() => {
+      void poll();
+    }, TX_POLL_INITIAL_DELAY_MS);
     return () => {
       mounted = false;
       if (timer) clearTimeout(timer);
@@ -125,7 +165,7 @@ export function useTokenize_Mint() {
 
 
 
-export function useTokenize_SetTokenUri() {
+export function useTokenizeV7_SetTokenUri() {
   const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -144,7 +184,7 @@ export function useTokenize_SetTokenUri() {
     setTxStatusError(null);
     try {
       // Use the generated contract function from the index
-      const fn = (contracts as any).tokenize_setTokenUri;
+      const fn = (contracts as any).tokenizeV7_setTokenUri;
       
       const result = isReadOnly 
         ? await fn(functionArgs) 
@@ -172,10 +212,17 @@ export function useTokenize_SetTokenUri() {
 
     let mounted = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let transientErrors = 0;
     const headers: Record<string, string> = {};
     if (scaffoldConfig.hiroApiKey) {
       headers['x-api-key'] = scaffoldConfig.hiroApiKey;
     }
+
+    const scheduleRetry = () => {
+      timer = setTimeout(() => {
+        void poll();
+      }, TX_POLL_INTERVAL_MS);
+    };
 
     const poll = async () => {
       try {
@@ -187,8 +234,24 @@ export function useTokenize_SetTokenUri() {
           },
         );
         if (!response.ok) {
+          if (isTransientTxPollHttpStatus(response.status)) {
+            transientErrors += 1;
+            if (!mounted) return;
+            if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+              setTxStatus('error');
+              setTxStatusError(
+                `Transaction status unavailable (HTTP ${response.status}) after ${transientErrors} attempts.`,
+              );
+              return;
+            }
+            setTxStatus('pending');
+            setTxStatusError(null);
+            scheduleRetry();
+            return;
+          }
           throw new Error(`tx status request failed with ${response.status}`);
         }
+        transientErrors = 0;
         const payload = await response.json();
         const status = String(payload?.tx_status ?? '').toLowerCase();
         if (!mounted) return;
@@ -205,9 +268,8 @@ export function useTokenize_SetTokenUri() {
         }
         if (status.includes('pending')) {
           setTxStatus('pending');
-          timer = setTimeout(() => {
-            void poll();
-          }, 2500);
+          setTxStatusError(null);
+          scheduleRetry();
           return;
         }
 
@@ -215,14 +277,23 @@ export function useTokenize_SetTokenUri() {
         setTxStatusError(payload?.tx_status ? `Unexpected tx status: ${payload.tx_status}` : 'Unknown tx status.');
       } catch (err) {
         if (!mounted) return;
-        setTxStatusError(err instanceof Error ? err.message : 'Failed to poll transaction status.');
-        timer = setTimeout(() => {
-          void poll();
-        }, 4000);
+        transientErrors += 1;
+        if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+          setTxStatus('error');
+          setTxStatusError(
+            err instanceof Error ? err.message : 'Failed to poll transaction status.',
+          );
+          return;
+        }
+        setTxStatus('pending');
+        setTxStatusError(null);
+        scheduleRetry();
       }
     };
 
-    void poll();
+    timer = setTimeout(() => {
+      void poll();
+    }, TX_POLL_INITIAL_DELAY_MS);
     return () => {
       mounted = false;
       if (timer) clearTimeout(timer);
@@ -238,7 +309,7 @@ export function useTokenize_SetTokenUri() {
 
 
 
-export function useTokenize_Transfer() {
+export function useTokenizeV7_Transfer() {
   const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -257,7 +328,7 @@ export function useTokenize_Transfer() {
     setTxStatusError(null);
     try {
       // Use the generated contract function from the index
-      const fn = (contracts as any).tokenize_transfer;
+      const fn = (contracts as any).tokenizeV7_transfer;
       
       const result = isReadOnly 
         ? await fn(functionArgs) 
@@ -285,10 +356,17 @@ export function useTokenize_Transfer() {
 
     let mounted = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let transientErrors = 0;
     const headers: Record<string, string> = {};
     if (scaffoldConfig.hiroApiKey) {
       headers['x-api-key'] = scaffoldConfig.hiroApiKey;
     }
+
+    const scheduleRetry = () => {
+      timer = setTimeout(() => {
+        void poll();
+      }, TX_POLL_INTERVAL_MS);
+    };
 
     const poll = async () => {
       try {
@@ -300,8 +378,24 @@ export function useTokenize_Transfer() {
           },
         );
         if (!response.ok) {
+          if (isTransientTxPollHttpStatus(response.status)) {
+            transientErrors += 1;
+            if (!mounted) return;
+            if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+              setTxStatus('error');
+              setTxStatusError(
+                `Transaction status unavailable (HTTP ${response.status}) after ${transientErrors} attempts.`,
+              );
+              return;
+            }
+            setTxStatus('pending');
+            setTxStatusError(null);
+            scheduleRetry();
+            return;
+          }
           throw new Error(`tx status request failed with ${response.status}`);
         }
+        transientErrors = 0;
         const payload = await response.json();
         const status = String(payload?.tx_status ?? '').toLowerCase();
         if (!mounted) return;
@@ -318,9 +412,8 @@ export function useTokenize_Transfer() {
         }
         if (status.includes('pending')) {
           setTxStatus('pending');
-          timer = setTimeout(() => {
-            void poll();
-          }, 2500);
+          setTxStatusError(null);
+          scheduleRetry();
           return;
         }
 
@@ -328,14 +421,23 @@ export function useTokenize_Transfer() {
         setTxStatusError(payload?.tx_status ? `Unexpected tx status: ${payload.tx_status}` : 'Unknown tx status.');
       } catch (err) {
         if (!mounted) return;
-        setTxStatusError(err instanceof Error ? err.message : 'Failed to poll transaction status.');
-        timer = setTimeout(() => {
-          void poll();
-        }, 4000);
+        transientErrors += 1;
+        if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+          setTxStatus('error');
+          setTxStatusError(
+            err instanceof Error ? err.message : 'Failed to poll transaction status.',
+          );
+          return;
+        }
+        setTxStatus('pending');
+        setTxStatusError(null);
+        scheduleRetry();
       }
     };
 
-    void poll();
+    timer = setTimeout(() => {
+      void poll();
+    }, TX_POLL_INITIAL_DELAY_MS);
     return () => {
       mounted = false;
       if (timer) clearTimeout(timer);
@@ -351,7 +453,7 @@ export function useTokenize_Transfer() {
 
 
 
-export function useTokenize_GetBalance() {
+export function useTokenizeV7_GetBalance() {
   const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -370,7 +472,7 @@ export function useTokenize_GetBalance() {
     setTxStatusError(null);
     try {
       // Use the generated contract function from the index
-      const fn = (contracts as any).tokenize_getBalance;
+      const fn = (contracts as any).tokenizeV7_getBalance;
       
       const result = isReadOnly 
         ? await fn(functionArgs) 
@@ -398,10 +500,17 @@ export function useTokenize_GetBalance() {
 
     let mounted = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let transientErrors = 0;
     const headers: Record<string, string> = {};
     if (scaffoldConfig.hiroApiKey) {
       headers['x-api-key'] = scaffoldConfig.hiroApiKey;
     }
+
+    const scheduleRetry = () => {
+      timer = setTimeout(() => {
+        void poll();
+      }, TX_POLL_INTERVAL_MS);
+    };
 
     const poll = async () => {
       try {
@@ -413,8 +522,24 @@ export function useTokenize_GetBalance() {
           },
         );
         if (!response.ok) {
+          if (isTransientTxPollHttpStatus(response.status)) {
+            transientErrors += 1;
+            if (!mounted) return;
+            if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+              setTxStatus('error');
+              setTxStatusError(
+                `Transaction status unavailable (HTTP ${response.status}) after ${transientErrors} attempts.`,
+              );
+              return;
+            }
+            setTxStatus('pending');
+            setTxStatusError(null);
+            scheduleRetry();
+            return;
+          }
           throw new Error(`tx status request failed with ${response.status}`);
         }
+        transientErrors = 0;
         const payload = await response.json();
         const status = String(payload?.tx_status ?? '').toLowerCase();
         if (!mounted) return;
@@ -431,9 +556,8 @@ export function useTokenize_GetBalance() {
         }
         if (status.includes('pending')) {
           setTxStatus('pending');
-          timer = setTimeout(() => {
-            void poll();
-          }, 2500);
+          setTxStatusError(null);
+          scheduleRetry();
           return;
         }
 
@@ -441,14 +565,23 @@ export function useTokenize_GetBalance() {
         setTxStatusError(payload?.tx_status ? `Unexpected tx status: ${payload.tx_status}` : 'Unknown tx status.');
       } catch (err) {
         if (!mounted) return;
-        setTxStatusError(err instanceof Error ? err.message : 'Failed to poll transaction status.');
-        timer = setTimeout(() => {
-          void poll();
-        }, 4000);
+        transientErrors += 1;
+        if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+          setTxStatus('error');
+          setTxStatusError(
+            err instanceof Error ? err.message : 'Failed to poll transaction status.',
+          );
+          return;
+        }
+        setTxStatus('pending');
+        setTxStatusError(null);
+        scheduleRetry();
       }
     };
 
-    void poll();
+    timer = setTimeout(() => {
+      void poll();
+    }, TX_POLL_INITIAL_DELAY_MS);
     return () => {
       mounted = false;
       if (timer) clearTimeout(timer);
@@ -464,7 +597,7 @@ export function useTokenize_GetBalance() {
 
 
 
-export function useTokenize_GetDecimals() {
+export function useTokenizeV7_GetDecimals() {
   const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -483,7 +616,7 @@ export function useTokenize_GetDecimals() {
     setTxStatusError(null);
     try {
       // Use the generated contract function from the index
-      const fn = (contracts as any).tokenize_getDecimals;
+      const fn = (contracts as any).tokenizeV7_getDecimals;
       
       const result = isReadOnly 
         ? await fn(functionArgs) 
@@ -511,10 +644,17 @@ export function useTokenize_GetDecimals() {
 
     let mounted = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let transientErrors = 0;
     const headers: Record<string, string> = {};
     if (scaffoldConfig.hiroApiKey) {
       headers['x-api-key'] = scaffoldConfig.hiroApiKey;
     }
+
+    const scheduleRetry = () => {
+      timer = setTimeout(() => {
+        void poll();
+      }, TX_POLL_INTERVAL_MS);
+    };
 
     const poll = async () => {
       try {
@@ -526,8 +666,24 @@ export function useTokenize_GetDecimals() {
           },
         );
         if (!response.ok) {
+          if (isTransientTxPollHttpStatus(response.status)) {
+            transientErrors += 1;
+            if (!mounted) return;
+            if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+              setTxStatus('error');
+              setTxStatusError(
+                `Transaction status unavailable (HTTP ${response.status}) after ${transientErrors} attempts.`,
+              );
+              return;
+            }
+            setTxStatus('pending');
+            setTxStatusError(null);
+            scheduleRetry();
+            return;
+          }
           throw new Error(`tx status request failed with ${response.status}`);
         }
+        transientErrors = 0;
         const payload = await response.json();
         const status = String(payload?.tx_status ?? '').toLowerCase();
         if (!mounted) return;
@@ -544,9 +700,8 @@ export function useTokenize_GetDecimals() {
         }
         if (status.includes('pending')) {
           setTxStatus('pending');
-          timer = setTimeout(() => {
-            void poll();
-          }, 2500);
+          setTxStatusError(null);
+          scheduleRetry();
           return;
         }
 
@@ -554,14 +709,23 @@ export function useTokenize_GetDecimals() {
         setTxStatusError(payload?.tx_status ? `Unexpected tx status: ${payload.tx_status}` : 'Unknown tx status.');
       } catch (err) {
         if (!mounted) return;
-        setTxStatusError(err instanceof Error ? err.message : 'Failed to poll transaction status.');
-        timer = setTimeout(() => {
-          void poll();
-        }, 4000);
+        transientErrors += 1;
+        if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+          setTxStatus('error');
+          setTxStatusError(
+            err instanceof Error ? err.message : 'Failed to poll transaction status.',
+          );
+          return;
+        }
+        setTxStatus('pending');
+        setTxStatusError(null);
+        scheduleRetry();
       }
     };
 
-    void poll();
+    timer = setTimeout(() => {
+      void poll();
+    }, TX_POLL_INITIAL_DELAY_MS);
     return () => {
       mounted = false;
       if (timer) clearTimeout(timer);
@@ -577,7 +741,7 @@ export function useTokenize_GetDecimals() {
 
 
 
-export function useTokenize_GetName() {
+export function useTokenizeV7_GetName() {
   const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -596,7 +760,7 @@ export function useTokenize_GetName() {
     setTxStatusError(null);
     try {
       // Use the generated contract function from the index
-      const fn = (contracts as any).tokenize_getName;
+      const fn = (contracts as any).tokenizeV7_getName;
       
       const result = isReadOnly 
         ? await fn(functionArgs) 
@@ -624,10 +788,17 @@ export function useTokenize_GetName() {
 
     let mounted = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let transientErrors = 0;
     const headers: Record<string, string> = {};
     if (scaffoldConfig.hiroApiKey) {
       headers['x-api-key'] = scaffoldConfig.hiroApiKey;
     }
+
+    const scheduleRetry = () => {
+      timer = setTimeout(() => {
+        void poll();
+      }, TX_POLL_INTERVAL_MS);
+    };
 
     const poll = async () => {
       try {
@@ -639,8 +810,24 @@ export function useTokenize_GetName() {
           },
         );
         if (!response.ok) {
+          if (isTransientTxPollHttpStatus(response.status)) {
+            transientErrors += 1;
+            if (!mounted) return;
+            if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+              setTxStatus('error');
+              setTxStatusError(
+                `Transaction status unavailable (HTTP ${response.status}) after ${transientErrors} attempts.`,
+              );
+              return;
+            }
+            setTxStatus('pending');
+            setTxStatusError(null);
+            scheduleRetry();
+            return;
+          }
           throw new Error(`tx status request failed with ${response.status}`);
         }
+        transientErrors = 0;
         const payload = await response.json();
         const status = String(payload?.tx_status ?? '').toLowerCase();
         if (!mounted) return;
@@ -657,9 +844,8 @@ export function useTokenize_GetName() {
         }
         if (status.includes('pending')) {
           setTxStatus('pending');
-          timer = setTimeout(() => {
-            void poll();
-          }, 2500);
+          setTxStatusError(null);
+          scheduleRetry();
           return;
         }
 
@@ -667,14 +853,23 @@ export function useTokenize_GetName() {
         setTxStatusError(payload?.tx_status ? `Unexpected tx status: ${payload.tx_status}` : 'Unknown tx status.');
       } catch (err) {
         if (!mounted) return;
-        setTxStatusError(err instanceof Error ? err.message : 'Failed to poll transaction status.');
-        timer = setTimeout(() => {
-          void poll();
-        }, 4000);
+        transientErrors += 1;
+        if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+          setTxStatus('error');
+          setTxStatusError(
+            err instanceof Error ? err.message : 'Failed to poll transaction status.',
+          );
+          return;
+        }
+        setTxStatus('pending');
+        setTxStatusError(null);
+        scheduleRetry();
       }
     };
 
-    void poll();
+    timer = setTimeout(() => {
+      void poll();
+    }, TX_POLL_INITIAL_DELAY_MS);
     return () => {
       mounted = false;
       if (timer) clearTimeout(timer);
@@ -690,7 +885,7 @@ export function useTokenize_GetName() {
 
 
 
-export function useTokenize_GetSymbol() {
+export function useTokenizeV7_GetSymbol() {
   const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -709,7 +904,7 @@ export function useTokenize_GetSymbol() {
     setTxStatusError(null);
     try {
       // Use the generated contract function from the index
-      const fn = (contracts as any).tokenize_getSymbol;
+      const fn = (contracts as any).tokenizeV7_getSymbol;
       
       const result = isReadOnly 
         ? await fn(functionArgs) 
@@ -737,10 +932,17 @@ export function useTokenize_GetSymbol() {
 
     let mounted = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let transientErrors = 0;
     const headers: Record<string, string> = {};
     if (scaffoldConfig.hiroApiKey) {
       headers['x-api-key'] = scaffoldConfig.hiroApiKey;
     }
+
+    const scheduleRetry = () => {
+      timer = setTimeout(() => {
+        void poll();
+      }, TX_POLL_INTERVAL_MS);
+    };
 
     const poll = async () => {
       try {
@@ -752,8 +954,24 @@ export function useTokenize_GetSymbol() {
           },
         );
         if (!response.ok) {
+          if (isTransientTxPollHttpStatus(response.status)) {
+            transientErrors += 1;
+            if (!mounted) return;
+            if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+              setTxStatus('error');
+              setTxStatusError(
+                `Transaction status unavailable (HTTP ${response.status}) after ${transientErrors} attempts.`,
+              );
+              return;
+            }
+            setTxStatus('pending');
+            setTxStatusError(null);
+            scheduleRetry();
+            return;
+          }
           throw new Error(`tx status request failed with ${response.status}`);
         }
+        transientErrors = 0;
         const payload = await response.json();
         const status = String(payload?.tx_status ?? '').toLowerCase();
         if (!mounted) return;
@@ -770,9 +988,8 @@ export function useTokenize_GetSymbol() {
         }
         if (status.includes('pending')) {
           setTxStatus('pending');
-          timer = setTimeout(() => {
-            void poll();
-          }, 2500);
+          setTxStatusError(null);
+          scheduleRetry();
           return;
         }
 
@@ -780,14 +997,23 @@ export function useTokenize_GetSymbol() {
         setTxStatusError(payload?.tx_status ? `Unexpected tx status: ${payload.tx_status}` : 'Unknown tx status.');
       } catch (err) {
         if (!mounted) return;
-        setTxStatusError(err instanceof Error ? err.message : 'Failed to poll transaction status.');
-        timer = setTimeout(() => {
-          void poll();
-        }, 4000);
+        transientErrors += 1;
+        if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+          setTxStatus('error');
+          setTxStatusError(
+            err instanceof Error ? err.message : 'Failed to poll transaction status.',
+          );
+          return;
+        }
+        setTxStatus('pending');
+        setTxStatusError(null);
+        scheduleRetry();
       }
     };
 
-    void poll();
+    timer = setTimeout(() => {
+      void poll();
+    }, TX_POLL_INITIAL_DELAY_MS);
     return () => {
       mounted = false;
       if (timer) clearTimeout(timer);
@@ -803,7 +1029,7 @@ export function useTokenize_GetSymbol() {
 
 
 
-export function useTokenize_GetTokenUri() {
+export function useTokenizeV7_GetTokenUri() {
   const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -822,7 +1048,7 @@ export function useTokenize_GetTokenUri() {
     setTxStatusError(null);
     try {
       // Use the generated contract function from the index
-      const fn = (contracts as any).tokenize_getTokenUri;
+      const fn = (contracts as any).tokenizeV7_getTokenUri;
       
       const result = isReadOnly 
         ? await fn(functionArgs) 
@@ -850,10 +1076,17 @@ export function useTokenize_GetTokenUri() {
 
     let mounted = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let transientErrors = 0;
     const headers: Record<string, string> = {};
     if (scaffoldConfig.hiroApiKey) {
       headers['x-api-key'] = scaffoldConfig.hiroApiKey;
     }
+
+    const scheduleRetry = () => {
+      timer = setTimeout(() => {
+        void poll();
+      }, TX_POLL_INTERVAL_MS);
+    };
 
     const poll = async () => {
       try {
@@ -865,8 +1098,24 @@ export function useTokenize_GetTokenUri() {
           },
         );
         if (!response.ok) {
+          if (isTransientTxPollHttpStatus(response.status)) {
+            transientErrors += 1;
+            if (!mounted) return;
+            if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+              setTxStatus('error');
+              setTxStatusError(
+                `Transaction status unavailable (HTTP ${response.status}) after ${transientErrors} attempts.`,
+              );
+              return;
+            }
+            setTxStatus('pending');
+            setTxStatusError(null);
+            scheduleRetry();
+            return;
+          }
           throw new Error(`tx status request failed with ${response.status}`);
         }
+        transientErrors = 0;
         const payload = await response.json();
         const status = String(payload?.tx_status ?? '').toLowerCase();
         if (!mounted) return;
@@ -883,9 +1132,8 @@ export function useTokenize_GetTokenUri() {
         }
         if (status.includes('pending')) {
           setTxStatus('pending');
-          timer = setTimeout(() => {
-            void poll();
-          }, 2500);
+          setTxStatusError(null);
+          scheduleRetry();
           return;
         }
 
@@ -893,14 +1141,23 @@ export function useTokenize_GetTokenUri() {
         setTxStatusError(payload?.tx_status ? `Unexpected tx status: ${payload.tx_status}` : 'Unknown tx status.');
       } catch (err) {
         if (!mounted) return;
-        setTxStatusError(err instanceof Error ? err.message : 'Failed to poll transaction status.');
-        timer = setTimeout(() => {
-          void poll();
-        }, 4000);
+        transientErrors += 1;
+        if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+          setTxStatus('error');
+          setTxStatusError(
+            err instanceof Error ? err.message : 'Failed to poll transaction status.',
+          );
+          return;
+        }
+        setTxStatus('pending');
+        setTxStatusError(null);
+        scheduleRetry();
       }
     };
 
-    void poll();
+    timer = setTimeout(() => {
+      void poll();
+    }, TX_POLL_INITIAL_DELAY_MS);
     return () => {
       mounted = false;
       if (timer) clearTimeout(timer);
@@ -916,7 +1173,7 @@ export function useTokenize_GetTokenUri() {
 
 
 
-export function useTokenize_GetTotalSupply() {
+export function useTokenizeV7_GetTotalSupply() {
   const [data, setData] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -935,7 +1192,7 @@ export function useTokenize_GetTotalSupply() {
     setTxStatusError(null);
     try {
       // Use the generated contract function from the index
-      const fn = (contracts as any).tokenize_getTotalSupply;
+      const fn = (contracts as any).tokenizeV7_getTotalSupply;
       
       const result = isReadOnly 
         ? await fn(functionArgs) 
@@ -963,10 +1220,17 @@ export function useTokenize_GetTotalSupply() {
 
     let mounted = true;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    let transientErrors = 0;
     const headers: Record<string, string> = {};
     if (scaffoldConfig.hiroApiKey) {
       headers['x-api-key'] = scaffoldConfig.hiroApiKey;
     }
+
+    const scheduleRetry = () => {
+      timer = setTimeout(() => {
+        void poll();
+      }, TX_POLL_INTERVAL_MS);
+    };
 
     const poll = async () => {
       try {
@@ -978,8 +1242,24 @@ export function useTokenize_GetTotalSupply() {
           },
         );
         if (!response.ok) {
+          if (isTransientTxPollHttpStatus(response.status)) {
+            transientErrors += 1;
+            if (!mounted) return;
+            if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+              setTxStatus('error');
+              setTxStatusError(
+                `Transaction status unavailable (HTTP ${response.status}) after ${transientErrors} attempts.`,
+              );
+              return;
+            }
+            setTxStatus('pending');
+            setTxStatusError(null);
+            scheduleRetry();
+            return;
+          }
           throw new Error(`tx status request failed with ${response.status}`);
         }
+        transientErrors = 0;
         const payload = await response.json();
         const status = String(payload?.tx_status ?? '').toLowerCase();
         if (!mounted) return;
@@ -996,9 +1276,8 @@ export function useTokenize_GetTotalSupply() {
         }
         if (status.includes('pending')) {
           setTxStatus('pending');
-          timer = setTimeout(() => {
-            void poll();
-          }, 2500);
+          setTxStatusError(null);
+          scheduleRetry();
           return;
         }
 
@@ -1006,14 +1285,23 @@ export function useTokenize_GetTotalSupply() {
         setTxStatusError(payload?.tx_status ? `Unexpected tx status: ${payload.tx_status}` : 'Unknown tx status.');
       } catch (err) {
         if (!mounted) return;
-        setTxStatusError(err instanceof Error ? err.message : 'Failed to poll transaction status.');
-        timer = setTimeout(() => {
-          void poll();
-        }, 4000);
+        transientErrors += 1;
+        if (transientErrors >= TX_POLL_MAX_TRANSIENT_ERRORS) {
+          setTxStatus('error');
+          setTxStatusError(
+            err instanceof Error ? err.message : 'Failed to poll transaction status.',
+          );
+          return;
+        }
+        setTxStatus('pending');
+        setTxStatusError(null);
+        scheduleRetry();
       }
     };
 
-    void poll();
+    timer = setTimeout(() => {
+      void poll();
+    }, TX_POLL_INITIAL_DELAY_MS);
     return () => {
       mounted = false;
       if (timer) clearTimeout(timer);

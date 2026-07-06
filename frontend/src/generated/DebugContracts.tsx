@@ -8,39 +8,39 @@ import Message from '@/components/Message';
 
 
 
-import { useTokenize_Mint } from './hooks';
+import { useTokenizeV7_Mint } from './hooks';
 
 
 
-import { useTokenize_SetTokenUri } from './hooks';
+import { useTokenizeV7_SetTokenUri } from './hooks';
 
 
 
-import { useTokenize_Transfer } from './hooks';
+import { useTokenizeV7_Transfer } from './hooks';
 
 
 
-import { useTokenize_GetBalance } from './hooks';
+import { useTokenizeV7_GetBalance } from './hooks';
 
 
 
-import { useTokenize_GetDecimals } from './hooks';
+import { useTokenizeV7_GetDecimals } from './hooks';
 
 
 
-import { useTokenize_GetName } from './hooks';
+import { useTokenizeV7_GetName } from './hooks';
 
 
 
-import { useTokenize_GetSymbol } from './hooks';
+import { useTokenizeV7_GetSymbol } from './hooks';
 
 
 
-import { useTokenize_GetTokenUri } from './hooks';
+import { useTokenizeV7_GetTokenUri } from './hooks';
 
 
 
-import { useTokenize_GetTotalSupply } from './hooks';
+import { useTokenizeV7_GetTotalSupply } from './hooks';
 
 
 
@@ -329,7 +329,7 @@ export default function DebugContracts() {
   const [activeTab, setActiveTab] = useState<'write' | 'read'>('write');
   const [hoveredTab, setHoveredTab] = useState<'write' | 'read' | null>(null);
   // Initialize with the first contract name to drop it down on load
-  const [openContract, setOpenContract] = useState<string | null>("tokenize");
+  const [openContract, setOpenContract] = useState<string | null>("tokenize-v7");
   const [openFunction, setOpenFunction] = useState<string | null>(null);
 
   return (
@@ -350,19 +350,19 @@ export default function DebugContracts() {
         <button 
           style={S.panelBtn} 
           onClick={() => {
-            setOpenContract(openContract === "tokenize" ? null : "tokenize");
+            setOpenContract(openContract === "tokenize-v7" ? null : "tokenize-v7");
             setOpenFunction(null); // Close functions when switching contracts
           }}
         >
           <div style={Object.assign({ display: 'flex', alignItems: 'center' })}>
             <div style={S.panelBar} />
-            <span style={S.panelName}>Tokenize</span>
+            <span style={S.panelName}>Tokenize-v7</span>
             <span style={S.panelExt}>.clar</span>
           </div>
-          <span style={S.headerTag}>{openContract === "tokenize" ? '▲' : '▼'}</span>
+          <span style={S.headerTag}>{openContract === "tokenize-v7" ? '▲' : '▼'}</span>
         </button>
 
-        {openContract === "tokenize" && (
+        {openContract === "tokenize-v7" && (
           <div style={Object.assign({ padding: '20px', width:'100%' })} className='space-y-4'>
             
             
@@ -375,10 +375,10 @@ export default function DebugContracts() {
               
               
                 {activeTab === 'write' && (
-                  <FunctionCard_Tokenize_Mint 
+                  <FunctionCard_TokenizeV7_Mint 
                     num="00"
-                    isOpen={openFunction === "tokenize_mint"}
-                    onToggle={() => setOpenFunction(openFunction === "tokenize_mint" ? null : "tokenize_mint")}
+                    isOpen={openFunction === "tokenize-v7_mint"}
+                    onToggle={() => setOpenFunction(openFunction === "tokenize-v7_mint" ? null : "tokenize-v7_mint")}
                   />
                 )}
               
@@ -394,10 +394,10 @@ export default function DebugContracts() {
               
               
                 {activeTab === 'write' && (
-                  <FunctionCard_Tokenize_SetTokenUri 
+                  <FunctionCard_TokenizeV7_SetTokenUri 
                     num="01"
-                    isOpen={openFunction === "tokenize_set-token-uri"}
-                    onToggle={() => setOpenFunction(openFunction === "tokenize_set-token-uri" ? null : "tokenize_set-token-uri")}
+                    isOpen={openFunction === "tokenize-v7_set-token-uri"}
+                    onToggle={() => setOpenFunction(openFunction === "tokenize-v7_set-token-uri" ? null : "tokenize-v7_set-token-uri")}
                   />
                 )}
               
@@ -413,10 +413,10 @@ export default function DebugContracts() {
               
               
                 {activeTab === 'write' && (
-                  <FunctionCard_Tokenize_Transfer 
+                  <FunctionCard_TokenizeV7_Transfer 
                     num="02"
-                    isOpen={openFunction === "tokenize_transfer"}
-                    onToggle={() => setOpenFunction(openFunction === "tokenize_transfer" ? null : "tokenize_transfer")}
+                    isOpen={openFunction === "tokenize-v7_transfer"}
+                    onToggle={() => setOpenFunction(openFunction === "tokenize-v7_transfer" ? null : "tokenize-v7_transfer")}
                   />
                 )}
               
@@ -432,10 +432,10 @@ export default function DebugContracts() {
               
               
   {activeTab === 'read' && (
-    <FunctionCard_Tokenize_GetBalance 
+    <FunctionCard_TokenizeV7_GetBalance 
       num="03"
-      isOpen={openFunction === "tokenize_get-balance"}
-      onToggle={() => setOpenFunction(openFunction === "tokenize_get-balance" ? null : "tokenize_get-balance")}
+      isOpen={openFunction === "tokenize-v7_get-balance"}
+      onToggle={() => setOpenFunction(openFunction === "tokenize-v7_get-balance" ? null : "tokenize-v7_get-balance")}
     />
   )}
               
@@ -451,10 +451,10 @@ export default function DebugContracts() {
               
               
   {activeTab === 'read' && (
-    <FunctionCard_Tokenize_GetDecimals 
+    <FunctionCard_TokenizeV7_GetDecimals 
       num="04"
-      isOpen={openFunction === "tokenize_get-decimals"}
-      onToggle={() => setOpenFunction(openFunction === "tokenize_get-decimals" ? null : "tokenize_get-decimals")}
+      isOpen={openFunction === "tokenize-v7_get-decimals"}
+      onToggle={() => setOpenFunction(openFunction === "tokenize-v7_get-decimals" ? null : "tokenize-v7_get-decimals")}
     />
   )}
               
@@ -470,10 +470,10 @@ export default function DebugContracts() {
               
               
   {activeTab === 'read' && (
-    <FunctionCard_Tokenize_GetName 
+    <FunctionCard_TokenizeV7_GetName 
       num="05"
-      isOpen={openFunction === "tokenize_get-name"}
-      onToggle={() => setOpenFunction(openFunction === "tokenize_get-name" ? null : "tokenize_get-name")}
+      isOpen={openFunction === "tokenize-v7_get-name"}
+      onToggle={() => setOpenFunction(openFunction === "tokenize-v7_get-name" ? null : "tokenize-v7_get-name")}
     />
   )}
               
@@ -489,10 +489,10 @@ export default function DebugContracts() {
               
               
   {activeTab === 'read' && (
-    <FunctionCard_Tokenize_GetSymbol 
+    <FunctionCard_TokenizeV7_GetSymbol 
       num="06"
-      isOpen={openFunction === "tokenize_get-symbol"}
-      onToggle={() => setOpenFunction(openFunction === "tokenize_get-symbol" ? null : "tokenize_get-symbol")}
+      isOpen={openFunction === "tokenize-v7_get-symbol"}
+      onToggle={() => setOpenFunction(openFunction === "tokenize-v7_get-symbol" ? null : "tokenize-v7_get-symbol")}
     />
   )}
               
@@ -508,10 +508,10 @@ export default function DebugContracts() {
               
               
   {activeTab === 'read' && (
-    <FunctionCard_Tokenize_GetTokenUri 
+    <FunctionCard_TokenizeV7_GetTokenUri 
       num="07"
-      isOpen={openFunction === "tokenize_get-token-uri"}
-      onToggle={() => setOpenFunction(openFunction === "tokenize_get-token-uri" ? null : "tokenize_get-token-uri")}
+      isOpen={openFunction === "tokenize-v7_get-token-uri"}
+      onToggle={() => setOpenFunction(openFunction === "tokenize-v7_get-token-uri" ? null : "tokenize-v7_get-token-uri")}
     />
   )}
               
@@ -527,10 +527,10 @@ export default function DebugContracts() {
               
               
   {activeTab === 'read' && (
-    <FunctionCard_Tokenize_GetTotalSupply 
+    <FunctionCard_TokenizeV7_GetTotalSupply 
       num="08"
-      isOpen={openFunction === "tokenize_get-total-supply"}
-      onToggle={() => setOpenFunction(openFunction === "tokenize_get-total-supply" ? null : "tokenize_get-total-supply")}
+      isOpen={openFunction === "tokenize-v7_get-total-supply"}
+      onToggle={() => setOpenFunction(openFunction === "tokenize-v7_get-total-supply" ? null : "tokenize-v7_get-total-supply")}
     />
   )}
               
@@ -565,8 +565,8 @@ function ContractPanel({ name, children }: { name: string; children: React.React
 
 
 
-function FunctionCard_Tokenize_Mint({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
-  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenize_Mint();
+function FunctionCard_TokenizeV7_Mint({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
+  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenizeV7_Mint();
   const isReadOnly = false;
 
   
@@ -652,8 +652,8 @@ function FunctionCard_Tokenize_Mint({ num, isOpen, onToggle }: { num: string, is
 
 
 
-function FunctionCard_Tokenize_SetTokenUri({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
-  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenize_SetTokenUri();
+function FunctionCard_TokenizeV7_SetTokenUri({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
+  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenizeV7_SetTokenUri();
   const isReadOnly = false;
 
   
@@ -732,8 +732,8 @@ function FunctionCard_Tokenize_SetTokenUri({ num, isOpen, onToggle }: { num: str
 
 
 
-function FunctionCard_Tokenize_Transfer({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
-  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenize_Transfer();
+function FunctionCard_TokenizeV7_Transfer({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
+  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenizeV7_Transfer();
   const isReadOnly = false;
 
   
@@ -838,8 +838,8 @@ function FunctionCard_Tokenize_Transfer({ num, isOpen, onToggle }: { num: string
 
 
 
-function FunctionCard_Tokenize_GetBalance({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
-  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenize_GetBalance();
+function FunctionCard_TokenizeV7_GetBalance({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
+  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenizeV7_GetBalance();
   const isReadOnly = true;
 
   
@@ -918,8 +918,8 @@ function FunctionCard_Tokenize_GetBalance({ num, isOpen, onToggle }: { num: stri
 
 
 
-function FunctionCard_Tokenize_GetDecimals({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
-  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenize_GetDecimals();
+function FunctionCard_TokenizeV7_GetDecimals({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
+  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenizeV7_GetDecimals();
   const isReadOnly = true;
 
   
@@ -984,8 +984,8 @@ function FunctionCard_Tokenize_GetDecimals({ num, isOpen, onToggle }: { num: str
 
 
 
-function FunctionCard_Tokenize_GetName({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
-  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenize_GetName();
+function FunctionCard_TokenizeV7_GetName({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
+  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenizeV7_GetName();
   const isReadOnly = true;
 
   
@@ -1050,8 +1050,8 @@ function FunctionCard_Tokenize_GetName({ num, isOpen, onToggle }: { num: string,
 
 
 
-function FunctionCard_Tokenize_GetSymbol({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
-  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenize_GetSymbol();
+function FunctionCard_TokenizeV7_GetSymbol({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
+  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenizeV7_GetSymbol();
   const isReadOnly = true;
 
   
@@ -1116,8 +1116,8 @@ function FunctionCard_Tokenize_GetSymbol({ num, isOpen, onToggle }: { num: strin
 
 
 
-function FunctionCard_Tokenize_GetTokenUri({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
-  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenize_GetTokenUri();
+function FunctionCard_TokenizeV7_GetTokenUri({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
+  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenizeV7_GetTokenUri();
   const isReadOnly = true;
 
   
@@ -1182,8 +1182,8 @@ function FunctionCard_Tokenize_GetTokenUri({ num, isOpen, onToggle }: { num: str
 
 
 
-function FunctionCard_Tokenize_GetTotalSupply({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
-  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenize_GetTotalSupply();
+function FunctionCard_TokenizeV7_GetTotalSupply({ num, isOpen, onToggle }: { num: string, isOpen: boolean, onToggle: () => void }) {
+  const { data, loading, txid, txStatus, txStatusError, explorerUrl, call } = useTokenizeV7_GetTotalSupply();
   const isReadOnly = true;
 
   

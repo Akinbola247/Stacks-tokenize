@@ -2,9 +2,8 @@
 // Re-run `stacksdapp generate` to update.
 
 import { request } from '@stacks/connect';
-import { createApiKeyMiddleware, createFetchFn } from '@stacks/network';
 import { fetchCallReadOnlyFunction, cvToValue, ClarityValue } from '@stacks/transactions';
-import { scaffoldConfig } from '../scaffold.config';
+import { getReadOnlyNetwork, scaffoldConfig } from '../scaffold.config';
 import { callDevnetContract, getDevnetSenderAddress } from '../lib/devnet';
 
 let _deployments: Record<string, any> = { contracts: {} };
@@ -20,24 +19,16 @@ function getContractId(name: string): { address: string; contractName: string } 
   return { address: contractId.slice(0, dot), contractName: contractId.slice(dot + 1) };
 }
 
-function getReadOnlyClient() {
-  if (!scaffoldConfig.hiroApiKey) return {};
-  return {
-    client: {
-      fetch: createFetchFn(createApiKeyMiddleware({ apiKey: scaffoldConfig.hiroApiKey })),
-    },
-  };
-}
 
-// ── tokenize ──────────────────────
+// ── tokenize-v7 ──────────────────────
 
 
 
-export async function tokenize_mint(
+export async function tokenizeV7_mint(
   functionArgs: ClarityValue[] = [],
   postConditions: any[] = [],
 ): Promise<any> {
-  const { address, contractName } = getContractId('tokenize');
+  const { address, contractName } = getContractId('tokenize-v7');
   if (!address) return undefined;
   if (scaffoldConfig.isDevnet) {
     return callDevnetContract({
@@ -61,11 +52,11 @@ export async function tokenize_mint(
 
 
 
-export async function tokenize_setTokenUri(
+export async function tokenizeV7_setTokenUri(
   functionArgs: ClarityValue[] = [],
   postConditions: any[] = [],
 ): Promise<any> {
-  const { address, contractName } = getContractId('tokenize');
+  const { address, contractName } = getContractId('tokenize-v7');
   if (!address) return undefined;
   if (scaffoldConfig.isDevnet) {
     return callDevnetContract({
@@ -89,11 +80,11 @@ export async function tokenize_setTokenUri(
 
 
 
-export async function tokenize_transfer(
+export async function tokenizeV7_transfer(
   functionArgs: ClarityValue[] = [],
   postConditions: any[] = [],
 ): Promise<any> {
-  const { address, contractName } = getContractId('tokenize');
+  const { address, contractName } = getContractId('tokenize-v7');
   if (!address) return undefined;
   if (scaffoldConfig.isDevnet) {
     return callDevnetContract({
@@ -118,20 +109,19 @@ export async function tokenize_transfer(
 
 
 
-export async function tokenize_getBalance(
+export async function tokenizeV7_getBalance(
   functionArgs: ClarityValue[] = [],
   senderAddress?: string
 ): Promise<unknown> {
-  const { address, contractName } = getContractId('tokenize');
+  const { address, contractName } = getContractId('tokenize-v7');
   if (!address) return null;
   const result = await fetchCallReadOnlyFunction({
     contractAddress: address,
     contractName,
     functionName: 'get-balance',
     functionArgs,
-    network: scaffoldConfig.isDevnet ? 'devnet' : scaffoldConfig.targetNetwork,
+    network: getReadOnlyNetwork(),
     senderAddress: senderAddress ?? getDevnetSenderAddress() ?? address,
-    ...getReadOnlyClient(),
   });
   return cvToValue(result);
 }
@@ -139,20 +129,19 @@ export async function tokenize_getBalance(
 
 
 
-export async function tokenize_getDecimals(
+export async function tokenizeV7_getDecimals(
   functionArgs: ClarityValue[] = [],
   senderAddress?: string
 ): Promise<unknown> {
-  const { address, contractName } = getContractId('tokenize');
+  const { address, contractName } = getContractId('tokenize-v7');
   if (!address) return null;
   const result = await fetchCallReadOnlyFunction({
     contractAddress: address,
     contractName,
     functionName: 'get-decimals',
     functionArgs,
-    network: scaffoldConfig.isDevnet ? 'devnet' : scaffoldConfig.targetNetwork,
+    network: getReadOnlyNetwork(),
     senderAddress: senderAddress ?? getDevnetSenderAddress() ?? address,
-    ...getReadOnlyClient(),
   });
   return cvToValue(result);
 }
@@ -160,20 +149,19 @@ export async function tokenize_getDecimals(
 
 
 
-export async function tokenize_getName(
+export async function tokenizeV7_getName(
   functionArgs: ClarityValue[] = [],
   senderAddress?: string
 ): Promise<unknown> {
-  const { address, contractName } = getContractId('tokenize');
+  const { address, contractName } = getContractId('tokenize-v7');
   if (!address) return null;
   const result = await fetchCallReadOnlyFunction({
     contractAddress: address,
     contractName,
     functionName: 'get-name',
     functionArgs,
-    network: scaffoldConfig.isDevnet ? 'devnet' : scaffoldConfig.targetNetwork,
+    network: getReadOnlyNetwork(),
     senderAddress: senderAddress ?? getDevnetSenderAddress() ?? address,
-    ...getReadOnlyClient(),
   });
   return cvToValue(result);
 }
@@ -181,20 +169,19 @@ export async function tokenize_getName(
 
 
 
-export async function tokenize_getSymbol(
+export async function tokenizeV7_getSymbol(
   functionArgs: ClarityValue[] = [],
   senderAddress?: string
 ): Promise<unknown> {
-  const { address, contractName } = getContractId('tokenize');
+  const { address, contractName } = getContractId('tokenize-v7');
   if (!address) return null;
   const result = await fetchCallReadOnlyFunction({
     contractAddress: address,
     contractName,
     functionName: 'get-symbol',
     functionArgs,
-    network: scaffoldConfig.isDevnet ? 'devnet' : scaffoldConfig.targetNetwork,
+    network: getReadOnlyNetwork(),
     senderAddress: senderAddress ?? getDevnetSenderAddress() ?? address,
-    ...getReadOnlyClient(),
   });
   return cvToValue(result);
 }
@@ -202,20 +189,19 @@ export async function tokenize_getSymbol(
 
 
 
-export async function tokenize_getTokenUri(
+export async function tokenizeV7_getTokenUri(
   functionArgs: ClarityValue[] = [],
   senderAddress?: string
 ): Promise<unknown> {
-  const { address, contractName } = getContractId('tokenize');
+  const { address, contractName } = getContractId('tokenize-v7');
   if (!address) return null;
   const result = await fetchCallReadOnlyFunction({
     contractAddress: address,
     contractName,
     functionName: 'get-token-uri',
     functionArgs,
-    network: scaffoldConfig.isDevnet ? 'devnet' : scaffoldConfig.targetNetwork,
+    network: getReadOnlyNetwork(),
     senderAddress: senderAddress ?? getDevnetSenderAddress() ?? address,
-    ...getReadOnlyClient(),
   });
   return cvToValue(result);
 }
@@ -223,20 +209,19 @@ export async function tokenize_getTokenUri(
 
 
 
-export async function tokenize_getTotalSupply(
+export async function tokenizeV7_getTotalSupply(
   functionArgs: ClarityValue[] = [],
   senderAddress?: string
 ): Promise<unknown> {
-  const { address, contractName } = getContractId('tokenize');
+  const { address, contractName } = getContractId('tokenize-v7');
   if (!address) return null;
   const result = await fetchCallReadOnlyFunction({
     contractAddress: address,
     contractName,
     functionName: 'get-total-supply',
     functionArgs,
-    network: scaffoldConfig.isDevnet ? 'devnet' : scaffoldConfig.targetNetwork,
+    network: getReadOnlyNetwork(),
     senderAddress: senderAddress ?? getDevnetSenderAddress() ?? address,
-    ...getReadOnlyClient(),
   });
   return cvToValue(result);
 }

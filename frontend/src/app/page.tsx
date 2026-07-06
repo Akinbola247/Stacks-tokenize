@@ -1,18 +1,12 @@
-import About from '@/components/About';
-import DebugContracts from '../components/debug/DebugContracts';
-import { TokenStatsBar } from '@/components/features/TokenStatsBar';
-import { BalanceCard } from '@/components/features/BalanceCard';
-import { ContractAddress } from '@/components/features/ContractAddress';
+import { GameShell } from '@/components/game/GameShell';
+// import DebugContracts from '../components/debug/DebugContracts';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#131416] text-white">
-      <div className="max-w-4xl mx-auto px-4">
-        <About />
-        <ContractAddress />
-        <TokenStatsBar />
-        <BalanceCard />
-        <DebugContracts />
+    <main className="game-bg min-h-screen text-white">
+      <div className="mx-auto max-w-5xl px-4 pb-16 pt-2">
+        <GameShell />
+        {/* <DebugContracts /> */}
       </div>
     </main>
   );

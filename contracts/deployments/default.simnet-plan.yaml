@@ -71,8 +71,8 @@ plan:
   - id: 1
     transactions:
     - transaction-type: emulated-contract-publish
-      contract-name: tokenize
+      contract-name: tokenize-v7
       emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-      path: contracts/tokenize.clar
+      path: contracts/tokenize-v7.clar
       clarity-version: 4
     epoch: '3.4'

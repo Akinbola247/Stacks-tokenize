@@ -8,10 +8,10 @@ plan:
   - id: 0
     transactions:
     - transaction-type: contract-publish
-      contract-name: tokenize
+      contract-name: tokenize-v7
       expected-sender: SP1G1J8TVYKX3FXNJ3BJ7MYNMQTKXWCGKRFR0JDD6
-      cost: 15730
-      path: contracts/tokenize.clar
+      cost: 15100
+      path: contracts/tokenize-v7.clar
       anchor-block-only: true
       clarity-version: 4
     epoch: '3.4'

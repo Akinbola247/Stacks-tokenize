@@ -8,4 +8,7 @@ describe('formatTokenAmount', () => {
   it('formats fractional tokens', () => {
     expect(formatTokenAmount(1_500_000n, 6)).toBe('1.5');
   });
+  it('formats cvToValue uint objects', () => {
+    expect(formatTokenAmount({ type: 'uint', value: '1500000' }, 6)).toBe('1.5');
+  });
 });
